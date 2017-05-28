@@ -162,6 +162,9 @@ if (!reobf.hasProperty('dependsOn')) {
     reobf {
         shadowJar { mappingType = 'SEARGE' }
     }
+    reobfJar {
+        enabled = false
+    }
     reobfShadowJar {
         mustRunAfter 'shadowJar'
     }
