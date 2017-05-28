@@ -40,7 +40,7 @@ public class DiscordAccepterCommands extends RootCommand {
 		}
 
 		@Override
-		public void processSubCommand(final ICommandSender sender, final String[] args) {
+		public void processSubCommand(final ICommandSender sender, final String[] args) throws WrongUsageException {
 			if (args.length<=0)
 				throw new WrongUsageException("Missing argument /"+getFullCommandString()+" <token>");
 			Config.getConfig().discordToken.set(args[0]);

@@ -15,8 +15,9 @@ import com.google.common.collect.Lists;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextFormatting;
 import net.teamfruit.discordaccepter.ChatBuilder;
 
 public class CommandHelpers {
@@ -31,11 +32,11 @@ public class CommandHelpers {
 		throw new WrongUsageException(I18n.format(cmd(command, "help"), command.getCommandUsage(sender)));
 	}
 
-	public static void processChildCommand(final @Nonnull ICommandSender sender, final @Nonnull SubCommand child, final @Nonnull String[] args) {
+	public static void processChildCommand(final MinecraftServer server, final @Nonnull ICommandSender sender, final @Nonnull SubCommand child, final @Nonnull String[] args) throws WrongUsageException {
 		if (!sender.canCommandSenderUseCommand(child.getRequiredPermissionLevel(), child.getFullCommandString()))
 			throw new WrongUsageException(I18n.format(cmd(child, "noperms")));
 		else
-			child.processCommand(sender, Arrays.copyOfRange(args, 1, args.length));
+			child.execute(server, sender, Arrays.copyOfRange(args, 1, args.length));
 	}
 
 	public static @Nullable List<String> completeChildCommand(final @Nonnull ICommandSender sender, final @Nonnull SubCommand child, final @Nonnull String[] args) {
@@ -43,11 +44,11 @@ public class CommandHelpers {
 	}
 
 	public static void printHelp(final @Nonnull ICommandSender sender, final @Nonnull IModCommand command) {
-		final ChatStyle header = new ChatStyle();
-		header.setColor(EnumChatFormatting.BLUE);
+		final Style header = new Style();
+		header.setColor(TextFormatting.BLUE);
 		ChatBuilder.create(cmd(command, command.getFullCommandString().replace(" ", ".")+".format")).useTranslation().setStyle(header).setParams(command.getFullCommandString()).sendPlayer(sender);
-		final ChatStyle body = new ChatStyle();
-		body.setColor(EnumChatFormatting.GRAY);
+		final Style body = new Style();
+		body.setColor(TextFormatting.GRAY);
 		final List<String> aliases = command.getCommandAliases();
 		if (aliases!=null)
 			ChatBuilder.create(cmd(command, "aliases")).useTranslation().setStyle(body).setParams(aliases.toString().replace("[", "").replace("]", "")).sendPlayer(sender);
@@ -96,7 +97,7 @@ public class CommandHelpers {
 		return complete;
 	}
 
-	public static boolean processCommands(final @Nonnull ICommandSender sender, final @Nonnull IModCommand command, final @Nonnull String[] args) {
+	public static boolean processCommands(final MinecraftServer server, final @Nonnull ICommandSender sender, final @Nonnull IModCommand command, final @Nonnull String[] args) throws WrongUsageException {
 		if (args.length>=1) {
 			if (args[0].equals("help")) {
 				command.printHelp(sender);
@@ -107,7 +108,7 @@ public class CommandHelpers {
 				final SubCommand child = arg2.next();
 				final String arg = args[0];
 				if (arg!=null&&child!=null&&matches(arg, child)) {
-					processChildCommand(sender, child, args);
+					processChildCommand(server, sender, child, args);
 					return true;
 				}
 			}

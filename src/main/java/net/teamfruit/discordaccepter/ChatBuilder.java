@@ -9,24 +9,23 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.collect.Maps;
 
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.server.management.ServerConfigurationManager;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.StatCollector;
+import net.minecraft.server.management.PlayerList;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class ChatBuilder {
 	public static final int DefaultId = 877;
 
-	private @Nullable IChatComponent chat = null;
-	private @Nullable ChatStyle style = null;
+	private @Nullable ITextComponent chat = null;
+	private @Nullable Style style = null;
 	private @Nonnull String text = "";
 	private @Nonnull Object[] params = new Object[0];
 	private boolean useTranslation = false;
@@ -35,16 +34,16 @@ public class ChatBuilder {
 	private final @Nonnull Map<String, String> replace = Maps.newHashMap();
 	private int id = -1;
 
-	public @Nonnull IChatComponent build() {
-		IChatComponent chat;
+	public @Nonnull ITextComponent build() {
+		ITextComponent chat;
 		if (this.chat!=null)
 			chat = this.chat;
 		else if (this.useTranslation&&!this.useJson)
-			chat = new ChatComponentTranslation(this.text, this.params);
+			chat = new TextComponentTranslation(this.text, this.params);
 		else {
 			String s;
 			if (this.useTranslation)
-				s = StatCollector.translateToLocal(this.text);
+				s = translateToLocal(this.text);
 			else
 				s = this.text;
 
@@ -56,16 +55,22 @@ public class ChatBuilder {
 
 			if (this.useJson)
 				try {
-					chat = IChatComponent.Serializer.func_150699_a(s);
+					chat = ITextComponent.Serializer.jsonToComponent(s);
 				} catch (final Exception e) {
-					chat = new ChatComponentText("Invaild Json: "+this.text);
+					chat = new TextComponentString("Invaild Json: "+this.text);
 				}
 			else
-				chat = new ChatComponentText(this.text);
+				chat = new TextComponentString(this.text);
 		}
 		if (this.style!=null)
-			chat.setChatStyle(this.style);
+			chat.setStyle(this.style);
 		return chat;
+	}
+
+	@SideOnly(Side.CLIENT)
+	@SuppressWarnings("deprecation")
+	public static String translateToLocal(final String text) {
+		return net.minecraft.util.text.translation.I18n.translateToLocal(text);
 	}
 
 	public boolean isEmpty() {
@@ -88,7 +93,7 @@ public class ChatBuilder {
 		return this;
 	}
 
-	public @Nonnull ChatBuilder setChat(final @Nullable IChatComponent chat) {
+	public @Nonnull ChatBuilder setChat(final @Nullable ITextComponent chat) {
 		this.chat = chat;
 		return this;
 	}
@@ -103,7 +108,7 @@ public class ChatBuilder {
 		return this;
 	}
 
-	public @Nonnull ChatBuilder setStyle(final @Nullable ChatStyle style) {
+	public @Nonnull ChatBuilder setStyle(final @Nullable Style style) {
 		this.style = style;
 		return this;
 	}
@@ -142,7 +147,7 @@ public class ChatBuilder {
 	public static void chatClient(final @Nonnull ChatBuilder chat) {
 		final Minecraft mc = FMLClientHandler.instance().getClient();
 		if (mc.thePlayer!=null) {
-			final IChatComponent msg = chat.build();
+			final ITextComponent msg = chat.build();
 			if (chat.useId)
 				mc.ingameGUI.getChatGUI().printChatMessageWithOptionalDeletion(msg, chat.id);
 			else
@@ -154,8 +159,9 @@ public class ChatBuilder {
 		target.addChatMessage(chat.build());
 	}
 
+	@SideOnly(Side.SERVER)
 	public static void sendServer(final @Nonnull ChatBuilder chat) {
-		final ServerConfigurationManager sender = FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager();
-		sender.sendChatMsg(chat.build());
+		final PlayerList player = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList();
+		player.sendChatMsg(chat.build());
 	}
 }

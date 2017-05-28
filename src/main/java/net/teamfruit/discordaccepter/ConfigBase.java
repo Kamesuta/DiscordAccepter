@@ -10,9 +10,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.collect.Sets;
 
-import cpw.mods.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 
 public class ConfigBase extends Configuration {
 	private final @Nonnull Set<IReloadableConfig> configs = Sets.newHashSet();
@@ -43,7 +43,7 @@ public class ConfigBase extends Configuration {
 
 	@CoreEvent
 	public void onConfigChanged(final @Nonnull ConfigChangedEvent.OnConfigChangedEvent eventArgs) {
-		if (StringUtils.equals(eventArgs.modID, Reference.MODID)) {
+		if (StringUtils.equals(eventArgs.getModID(), Reference.MODID)) {
 			save();
 			reload();
 		}
@@ -87,11 +87,6 @@ public class ConfigBase extends Configuration {
 
 		public @Nonnull ConfigProperty<E> setListener(@Nullable final ConfigListener<E> listener) {
 			this.listener = listener;
-			return this;
-		}
-
-		public @Nonnull ConfigProperty<E> setComment(final @Nonnull String comment) {
-			this.property.comment = comment;
 			return this;
 		}
 

@@ -12,6 +12,9 @@ import com.google.common.collect.Sets;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.WrongUsageException;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 
 public abstract class SubCommand implements IModCommand {
 	private final @Nonnull String name;
@@ -98,13 +101,13 @@ public abstract class SubCommand implements IModCommand {
 	}
 
 	@Override
-	public @Nullable List<?> addTabCompletionOptions(final @Nullable ICommandSender p_71516_1_, final @Nullable String[] p_71516_2_) {
+	public @Nullable List<String> getTabCompletionOptions(final MinecraftServer server, final @Nullable ICommandSender p_71516_1_, final @Nullable String[] p_71516_2_, @Nullable final BlockPos pos) {
 		return null;
 	}
 
 	@Override
-	public void processCommand(final @Nullable ICommandSender sender, final @Nullable String[] args) {
-		if (sender!=null&&args!=null&&!CommandHelpers.processCommands(sender, this, args))
+	public void execute(final MinecraftServer server, @Nullable final ICommandSender sender, @Nullable final String[] args) throws WrongUsageException {
+		if (sender!=null&&args!=null&&!CommandHelpers.processCommands(server, sender, this, args))
 			processSubCommand(sender, args);
 	}
 
@@ -112,7 +115,7 @@ public abstract class SubCommand implements IModCommand {
 		return CommandHelpers.completeCommands(sender, this, args);
 	}
 
-	public void processSubCommand(final @Nonnull ICommandSender sender, final @Nonnull String[] args) {
+	public void processSubCommand(final @Nonnull ICommandSender sender, final @Nonnull String[] args) throws WrongUsageException {
 		CommandHelpers.throwWrongUsage(sender, this);
 	}
 
@@ -127,7 +130,7 @@ public abstract class SubCommand implements IModCommand {
 	}
 
 	@Override
-	public boolean canCommandSenderUseCommand(final @Nullable ICommandSender sender) {
+	public boolean checkPermission(final MinecraftServer server, final @Nullable ICommandSender sender) {
 		if (sender!=null)
 			return sender.canCommandSenderUseCommand(getRequiredPermissionLevel(), getCommandName());
 		return false;
@@ -155,14 +158,10 @@ public abstract class SubCommand implements IModCommand {
 		return " "+getCommandName();
 	}
 
+	@Override
 	public int compareTo(final @Nullable ICommand command) {
 		if (command!=null)
 			return getCommandName().compareTo(command.getCommandName());
 		return 0;
-	}
-
-	@Override
-	public int compareTo(final @Nullable Object command) {
-		return this.compareTo((ICommand) command);
 	}
 }

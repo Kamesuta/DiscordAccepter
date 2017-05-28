@@ -11,6 +11,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.teamfruit.discordaccepter.ChatBuilder;
 import net.teamfruit.discordaccepter.Config;
 import net.teamfruit.discordaccepter.CoreHandler;
@@ -158,7 +159,7 @@ public class DiscordBase {
 							CoreHandler.instance.invokeLater(new Runnable() {
 								@Override
 								public void run() {
-									final MinecraftServer server = MinecraftServer.getServer();
+									final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 									server.getCommandManager().executeCommand(server,
 											StringUtils.replaceEach(command,
 													new String[] { "%playername%", "%username%" },

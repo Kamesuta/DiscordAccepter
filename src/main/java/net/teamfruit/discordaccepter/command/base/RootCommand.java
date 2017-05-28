@@ -12,6 +12,9 @@ import com.google.common.collect.Sets;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.WrongUsageException;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 
 public class RootCommand extends CommandBase implements IModCommand {
 	public final @Nonnull String langPrefix;
@@ -64,14 +67,14 @@ public class RootCommand extends CommandBase implements IModCommand {
 	}
 
 	@Override
-	public void processCommand(final @Nullable ICommandSender sender, final @Nullable String[] args) {
+	public void execute(final MinecraftServer server, final @Nullable ICommandSender sender, final @Nullable String[] args) throws WrongUsageException {
 		if (sender!=null&&args!=null)
-			if (!CommandHelpers.processCommands(sender, this, args))
+			if (!CommandHelpers.processCommands(server, sender, this, args))
 				CommandHelpers.throwWrongUsage(sender, this);
 	}
 
 	@Override
-	public @Nullable List<String> addTabCompletionOptions(final @Nullable ICommandSender sender, final @Nullable String[] args) {
+	public @Nullable List<String> getTabCompletionOptions(final MinecraftServer server, final @Nullable ICommandSender sender, final @Nullable String[] args, @Nullable final BlockPos pos) {
 		if (sender!=null&&args!=null)
 			return CommandHelpers.completeCommands(sender, this, args);
 		return null;
