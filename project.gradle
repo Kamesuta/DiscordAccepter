@@ -1,0 +1,15 @@
+repositories {
+    maven {
+        name = 'jitpack.io'
+        url = 'https://jitpack.io'
+    }
+}
+
+dependencies {
+    shade ('org.apache.httpcomponents:httpmime:4.3.3') { transitive=false }
+    shade ('com.github.austinv11:Discord4j:2.7.0')
+}
+
+shadowJar {
+    relocate 'org.apache.http.entity.mime', 'net.teamfruit.lib.apache.http.entity.mime'
+}
